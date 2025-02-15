@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Ticket Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        h2 {
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .seat {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            text-align: center;
+            line-height: 40px;
+            background-color: lightgray;
+            border: 1px solid black;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .selected {
+            background-color: green;
+            color: white;
+        }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .form-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+        }
+        .btn:disabled {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+        .confirmation {
+            margin-top: 20px;
+            padding: 10px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Bus Ticket Booking</h2>
+        <div id="seatContainer"></div>
+
+        <div class="form-container">
+            <h3>Passenger Details</h3>
+            <label for="name">Full Name</label>
+            <input type="text" id="name" placeholder="Enter your full name" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Enter your email" required>
+
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" placeholder="Enter your phone number" required>
+        </div>
+
+        <button id="confirmBooking" class="btn" disabled>Confirm Booking</button>
+        
+        <div id="confirmationMessage" class="confirmation"></div>
+    </div>
+
+    <script>
+        const seatContainer = document.getElementById("seatContainer");
+        const confirmButton = document.getElementById("confirmBooking");
+        const confirmationMessage = document.getElementById("confirmationMessage");
+        const nameInput = document.getElementById("name");
+        const emailInput = document.getElementById("email");
+        const phoneInput = document.getElementById("phone");
+
+        const totalSeats = 20;
+        let selectedSeats = [];
+        let bookingConfirmed = false;
+
+        // Create seats dynamically
+        for (let i = 1; i <= totalSeats; i++) {
+            let seat = document.createElement("div");
+            seat.classList.add("seat");
+            seat.innerText = i;
+            seat.setAttribute("data-seat", i);
+
+            // Click event for seat selection/deselection
+            seat.addEventListener("click", function () {
+                if (bookingConfirmed) return;
+
+                let seatNumber = parseInt(this.getAttribute("data-seat"));
+
+                if (selectedSeats.includes(seatNumber)) {
+                    // Deselect seat
+                    selectedSeats = selectedSeats.filter(seat => seat !== seatNumber);
+                    this.classList.remove("selected");
+                } else {
+                    // Select seat
+                    selectedSeats.push(seatNumber);
+                    this.classList.add("selected");
+                }
+
+                checkFormCompletion(); // Check if form & seats are selected
+            });
+
+            seatContainer.appendChild(seat);
+        }
+
+        // Function to check if all required fields are filled
+        function checkFormCompletion() {
+            if (selectedSeats.length > 0 && nameInput.value.trim() && emailInput.value.trim() && phoneInput.value.trim()) {
+                confirmButton.removeAttribute("disabled");
+            } else {
+                confirmButton.setAttribute("disabled", true);
+            }
+        }
+
+        // Listen for input changes to enable confirm button
+        nameInput.addEventListener("input", checkFormCompletion);
+        emailInput.addEventListener("input", checkFormCompletion);
+        phoneInput.addEventListener("input", checkFormCompletion);
+
+        // Confirm Booking Button Click Event
+        confirmButton.addEventListener("click", function () {
+            if (selectedSeats.length === 0) {
+                alert("Please select at least one seat.");
+                return;
+            }
+
+            bookingConfirmed = true;
+
+            // Disable all seat interactions
+            document.querySelectorAll(".seat").forEach(seat => {
+                seat.classList.add("disabled");
+            });
+
+            // Display confirmation message
+            confirmationMessage.innerHTML = `
+                <h3>Booking Confirmed!</h3>
+                <p><strong>Name:</strong> ${nameInput.value}</p>
+                <p><strong>Email:</strong> ${emailInput.value}</p>
+                <p><strong>Phone:</strong> ${phoneInput.value}</p>
+                <p><strong>Seats:</strong> ${selectedSeats.join(", ")}</p>
+            `;
+            confirmationMessage.style.display = "block";
+
+            // Simulate sending data to backend
+            console.log("Booking Details:", {
+                name: nameInput.value,
+                email: emailInput.value,
+                phone: phoneInput.value,
+                seats: selectedSeats
+            });
+
+            // Disable confirm button
+            confirmButton.setAttribute("disabled", true);
+        });
+    </script>
+
+</body>
+</html>
